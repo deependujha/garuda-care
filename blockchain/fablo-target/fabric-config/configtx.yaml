@@ -1,0 +1,254 @@
+################################################################################
+#   SECTION: Capabilities
+################################################################################
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+    Orderer: &OrdererCapabilities
+        V2_0: true
+    Application: &ApplicationCapabilities
+        V2_0: true
+
+################################################################################
+#   CHANNEL Defaults
+################################################################################
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+################################################################################
+#   Section: Organizations
+################################################################################
+Organizations:
+    - &blockOrderer
+      Name: blockOrdererMSP
+      ID: blockOrdererMSP
+      MSPDir: crypto-config/peerOrganizations/block-orderer.example.com/msp
+
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('blockOrdererMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('blockOrdererMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('blockOrdererMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('blockOrdererMSP.member')"
+
+      AnchorPeers:
+
+    - &hospital
+      Name: hospitalMSP
+      ID: hospitalMSP
+      MSPDir: crypto-config/peerOrganizations/hospital.example.com/msp
+
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('hospitalMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('hospitalMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('hospitalMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('hospitalMSP.member')"
+
+      AnchorPeers:
+          - Host: peer0.hospital.example.com
+            Port: 7041
+
+          - Host: peer1.hospital.example.com
+            Port: 7042
+
+    - &defence
+      Name: defenceMSP
+      ID: defenceMSP
+      MSPDir: crypto-config/peerOrganizations/defence.example.com/msp
+
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('defenceMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('defenceMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('defenceMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('defenceMSP.member')"
+
+      AnchorPeers:
+          - Host: peer0.defence.example.com
+            Port: 7061
+
+    - &insurance
+      Name: insuranceMSP
+      ID: insuranceMSP
+      MSPDir: crypto-config/peerOrganizations/insurance.example.com/msp
+
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('insuranceMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('insuranceMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('insuranceMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('insuranceMSP.member')"
+
+      AnchorPeers:
+          - Host: peer0.insurance.example.com
+            Port: 7081
+
+    - &dataAuthority
+      Name: dataAuthorityMSP
+      ID: dataAuthorityMSP
+      MSPDir: crypto-config/peerOrganizations/data-authority.example.com/msp
+
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('dataAuthorityMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('dataAuthorityMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('dataAuthorityMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('dataAuthorityMSP.member')"
+
+      AnchorPeers:
+          - Host: peer0.data-authority.example.com
+            Port: 7101
+
+################################################################################
+#   SECTION: Application
+################################################################################
+Application: &ApplicationDefaults
+    Organizations:
+    # Policies defines the set of policies at this level of the config tree
+    # For Application policies, their canonical path is
+    #   /Channel/Application/<PolicyName>
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+################################################################################
+#   SECTION: Orderer
+################################################################################
+Orderer: &Group1Defaults
+    OrdererType: solo
+    Addresses:
+        - orderer0.group1.block-orderer.example.com:7030
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+    # Policies defines the set of policies at this level of the config tree
+    # For Orderer policies, their canonical path is
+    #   /Channel/Orderer/<PolicyName>
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        # BlockValidation specifies what signatures must be included in the block
+        # from the orderer for the peer to validate it.
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+    Capabilities:
+        <<: *OrdererCapabilities
+
+################################################################################
+#   Profile
+################################################################################
+# https://github:com/hyperledger/fabric/blob/master/sampleconfig/configtx.yaml
+
+Profiles:
+    # Profile used to create Genesis block for group group1 #
+    Group1Genesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *Group1Defaults
+            Organizations:
+                - *blockOrderer
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *blockOrderer
+                    - *hospital
+                    - *defence
+                    - *insurance
+                    - *dataAuthority
+
+    # Profile used to create channeltx for my-channel #
+    MyChannel:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *Group1Defaults
+            Organizations:
+                - *blockOrderer
+            Capabilities:
+                <<: *ApplicationCapabilities
+        Consortium: SampleConsortium
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *hospital
+                    - *defence
+                    - *insurance
+                    - *dataAuthority
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *hospital
+                - *defence
+                - *insurance
+                - *dataAuthority

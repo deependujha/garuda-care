@@ -1,0 +1,21 @@
+{
+  "network-configs": {
+    "network-hospital": {
+      "name": "Network of hospital",
+      "profile": "/opt/explorer/app/platform/fabric/connection-profile/connection-profile-hospital.json"
+    },
+    "network-defence": {
+      "name": "Network of defence",
+      "profile": "/opt/explorer/app/platform/fabric/connection-profile/connection-profile-defence.json"
+    },
+    "network-insurance": {
+      "name": "Network of insurance",
+      "profile": "/opt/explorer/app/platform/fabric/connection-profile/connection-profile-insurance.json"
+    },
+    "network-dataauthority": {
+      "name": "Network of dataAuthority",
+      "profile": "/opt/explorer/app/platform/fabric/connection-profile/connection-profile-dataauthority.json"
+    }
+  },
+  "license": "Apache-2.0"
+}
